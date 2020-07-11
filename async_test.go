@@ -15,11 +15,11 @@ func TestAsyncCallbackWithAttempt(t *testing.T) {
 }
 
 func errorCallbackTest(str string) (res string, err error) {
-	defer func() {
-		if err1 := recover(); err1 != nil {
-			err = fmt.Errorf("callback err: %v", err1)
-		}
-	}()
+	//defer func() {
+	//	if err1 := recover(); err1 != nil {
+	//		err = fmt.Errorf("callback err: %v", err1)
+	//	}
+	//}()
 
 	if str == "error" {
 		return "", fmt.Errorf("mock err: %s", str)
@@ -30,4 +30,16 @@ func errorCallbackTest(str string) (res string, err error) {
 
 	fmt.Printf("Test msg: %s\n", str)
 	return fmt.Sprintf("Test msg: %s", str), nil
+}
+
+func Test_decorateCallbackWithAttempt(t *testing.T) {
+	decoratedCallback := errorCallbackTest
+	err := decorateCallbackWithAttempt(&decoratedCallback, errorCallbackTest, 1, 3)
+	if err != nil {
+		panic(err)
+	}
+	go decoratedCallback("good")
+	go decoratedCallback("error")
+
+	time.Sleep(time.Second * 5)
 }
